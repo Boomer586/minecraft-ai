@@ -1027,6 +1027,25 @@
         function getDemoResponse(message) {
             const lower = message.toLowerCase();
             
+            // Greetings - respond naturally
+            if (lower.match(/^(hi|hello|hey|sup|yo|whats up|what's up|howdy|greetings)$/i) || lower.match(/^(hi|hello|hey)[!\s]*$/i)) {
+                return `Hey there! 👋 I'm your Minecraft AI assistant! I can help you with mods, server setups, building tips, and pretty much anything Minecraft-related.
+
+What are you working on today? Need help finding a mod, setting up a server, or optimizing your game?`;
+            }
+            
+            // Thanks/appreciation
+            if (lower.includes('thank') || lower.includes('thanks') || lower.includes('thx')) {
+                return `You're welcome! 😊 Happy to help! Let me know if you need anything else about Minecraft!`;
+            }
+            
+            // How are you / small talk
+            if (lower.includes('how are you') || lower.includes('how r u')) {
+                return `I'm doing great! Just here ready to help with all things Minecraft! 🎮⛏️ 
+
+What can I help you with today? Looking for mod recommendations, server help, or building tips?`;
+            }
+            
             // Building mods with download links
             if (lower.includes('build') || lower.includes('axiom') || lower.includes('worldedit')) {
                 return `Here are the **best building mods** for Minecraft with download links:
@@ -1059,7 +1078,7 @@ Need help installing any of these?`;
             }
             
             // Performance mods with links
-            if (lower.includes('performance') || lower.includes('fps') || lower.includes('lag')) {
+            if (lower.includes('performance') || lower.includes('fps') || lower.includes('lag') || lower.includes('slow')) {
                 return `⚡ **Top Performance Mods** to boost your FPS:
 
 **🚀 Sodium** (Fabric)
@@ -1126,18 +1145,106 @@ Installation: Place .jar files in your mods folder!`;
 
 Want detailed help with any step?`;
             }
+
+            // Fabric mods
+            if (lower.includes('fabric')) {
+                return `🧵 **Best Fabric Mods** for modern Minecraft:
+
+**Performance:**
+• Sodium - Massive FPS boost
+• Lithium - General optimization
+• Starlight - Better lighting engine
+
+**Building:**
+• Litematica - Schematics
+• MiniHUD - Helpful overlays
+• Tweakeroo - Quality of life features
+
+**Gameplay:**
+• Roughly Enough Items (REI) - Recipe viewer
+• Mod Menu - Manage your mods
+• Fabric API - Required for most mods
+
+All available on Modrinth! Want specific recommendations?`;
+            }
+
+            // Forge mods
+            if (lower.includes('forge')) {
+                return `⚒️ **Top Forge Mods** for enhanced gameplay:
+
+**Tech Mods:**
+• Create - Amazing mechanical contraptions
+• Applied Energistics 2 - Storage system
+• Mekanism - Machinery & power
+
+**Building:**
+• Chisel - Decorative blocks
+• Macaw's mods - Furniture & decorations
+• Supplementaries - Utility decorations
+
+**Performance:**
+• OptiFine - FPS & shaders
+• FerriteCore - RAM optimization
+
+Download from CurseForge! What type of gameplay are you into?`;
+            }
+
+            // Installation help
+            if (lower.includes('install') || lower.includes('how to')) {
+                return `📦 **How to Install Mods:**
+
+**Step 1:** Download the mod loader
+• Fabric: fabricmc.net/use/installer
+• Forge: files.minecraftforge.net
+
+**Step 2:** Run the installer
+• Click "Install Client"
+• Select your Minecraft version
+
+**Step 3:** Download mods
+• Get .jar files from CurseForge or Modrinth
+• Make sure they match your Minecraft version!
+
+**Step 4:** Put mods in folder
+• Windows: %appdata%\\.minecraft\\mods
+• Mac: ~/Library/Application Support/minecraft/mods
+• Linux: ~/.minecraft/mods
+
+**Step 5:** Launch Minecraft
+• Select the Fabric/Forge profile
+• Your mods should load!
+
+Need help with a specific mod?`;
+            }
             
-            // Default response
-            return `I can help you with:
+            // Catch-all for general questions
+            if (lower.length < 20 && (lower.includes('help') || lower.includes('?'))) {
+                return `I'm here to help with anything Minecraft! 🎮
 
-🏗️ **Building Mods** - Axiom, WorldEdit, Litematica (with download links!)
-⚡ **Performance** - Sodium, OptiFine, FPS optimization
-🖥️ **Server Setup** - Complete guides with download links
-🧵 **Fabric Mods** - Modern mod recommendations
-⚒️ **Forge Mods** - Classic mods and modpacks
-💎 **Anything Minecraft** - Just ask!
+I'm great at:
+• Finding the perfect mods for you
+• Server setup and troubleshooting
+• Performance optimization tips
+• Building techniques and tools
+• Installation guides
 
-Try asking: "What are the best building mods?" or "How do I set up a server?"`;
+What do you need help with specifically?`;
+            }
+            
+            // Default conversational response
+            return `I'd love to help with that! While I'm in demo mode right now, I can still give you good info about:
+
+🏗️ **Building mods** - Axiom, WorldEdit, Litematica
+⚡ **Performance** - Sodium, OptiFine, FPS tips
+🖥️ **Server setup** - Complete guides
+🔧 **Mod recommendations** - For any playstyle
+
+Try asking me something specific like:
+• "What are the best building mods?"
+• "How do I improve my FPS?"
+• "Help me set up a server"
+
+What would you like to know?`;
         }
 
         // Send Message
