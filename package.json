@@ -14,7 +14,7 @@
     "assistant",
     "mods"
   ],
-  "author": "Your Name",
+  "author": "Celesvex",
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.1",
