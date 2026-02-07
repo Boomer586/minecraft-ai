@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft AI Assistant</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #3b82f6;
+            --accent: #8b5cf6;
+            --bg-dark: #0a0e1a;
+            --bg-darker: #050810;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(148, 163, 184, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 50%, #0a0e1a 100%);
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Advanced Background Effects */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridPulse 8s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        .bg-gradient-orbs {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            top: -250px;
+            left: -250px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            bottom: -200px;
+            right: -200px;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(100px, -100px) scale(1.1);
+            }
+            66% {
+                transform: translate(-100px, 100px) scale(0.9);
+            }
+        }
+
+        /* Particle System */
+        .particle-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0;
+            animation: particleFloat linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-20vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Main Container */
+        .app-container {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* Glass Morphism */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            border-radius: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 10px 50px rgba(16, 185, 129, 0.7); }
+        }
+
+        .logo-text h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            gap: 1.5rem;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .quick-action {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .quick-action:hover {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .quick-action-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .quick-action-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .categories {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .category-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+            transition: color 0.3s ease;
+        }
+
+        .category-item:hover {
+            color: var(--primary);
+        }
+
+        .category-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            scroll-behavior: smooth;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* Welcome Screen */
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .welcome-icon {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .welcome h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .welcome p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .feature-tag {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .feature-tag:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: messageSlide 0.4s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .message-avatar.ai {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+
+        .message-avatar.user {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        }
+
+        .message-content {
+            flex: 1;
+            max-width: 70%;
+        }
+
+        .message-bubble {
+            padding: 1.25rem 1.5rem;
+            border-radius: 1.25rem;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .message.ai .message-bubble {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+            margin-left: auto;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 0.5rem;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+        }
+
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Input Area */
+        .chat-input-container {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1.25rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .send-btn {
+            padding: 1.25rem 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 1rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.5);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .input-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.connected {
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Markdown Styling */
+        .message-bubble h1, .message-bubble h2, .message-bubble h3 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .message-bubble ul, .message-bubble ol {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-bubble li {
+            margin-bottom: 0.25rem;
+        }
+
+        .message-bubble code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .message-bubble pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+
+        .message-bubble strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .message-bubble a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+
+        .message-bubble a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .btn {
+                flex: 1;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div class="bg-gradient-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="particle-container" id="particles"></div>
+
+    <!-- Main App -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass header">
+            <div class="logo-section">
+                <div class="logo-icon">⛏️</div>
+                <div class="logo-text">
+                    <h1>MINECRAFT AI</h1>
+                    <p>Powered by Claude AI</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-glass" onclick="clearChat()">
+                    <span>🗑️</span> Clear Chat
+                </button>
+                <button class="btn btn-glass" onclick="showApiInfo()">
+                    <span>⚙️</span> API Setup
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="glass sidebar">
+                <h3 class="section-title">Quick Actions</h3>
+                
+                <div class="quick-action" onclick="quickPrompt('What are the best building mods for Minecraft? I want to create large structures quickly.')">
+                    <div class="quick-action-icon">🏗️</div>
+                    <div class="quick-action-text">Building Mods</div>
+                </div>
+
+                <div class="quick-action" onclick="quickPrompt('How do I set up a Minecraft server? I want to play with friends.')">
+                    <div class="quick-action-icon">🖥️</div>
+                    <div class="quick-action-text">Server Setup Guide</div>
+                </div>
+
+                <div class="quick-action" onclick="quickPrompt('Recommend performance mods to improve my FPS. My game is running slow.')">
+                    <div class="quick-action-icon">⚡</div>
+                    <div class="quick-action-text">Performance Optimization</div>
+                </div>
+
+                <div class="quick-action" onclick="quickPrompt('What mods are similar to Axiom for world editing?')">
+                    <div class="quick-action-icon">🔧</div>
+                    <div class="quick-action-text">Find Mod Alternatives</div>
+                </div>
+
+                <div class="quick-action" onclick="quickPrompt('Give me the best Fabric mods for Minecraft 1.20+')">
+                    <div class="quick-action-icon">🧵</div>
+                    <div class="quick-action-text">Fabric Mods List</div>
+                </div>
+
+                <div class="quick-action" onclick="quickPrompt('What are the top Forge mods for enhancing gameplay?')">
+                    <div class="quick-action-icon">⚒️</div>
+                    <div class="quick-action-text">Forge Mods Collection</div>
+                </div>
+
+                <div class="categories">
+                    <h3 class="section-title">Categories</h3>
+                    <div class="category-item">
+                        <div class="category-dot"></div>
+                        <span>Building & Creative Tools</span>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-dot"></div>
+                        <span>Performance & Optimization</span>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-dot"></div>
+                        <span>Utility & Quality of Life</span>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-dot"></div>
+                        <span>Adventure & Exploration</span>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-dot"></div>
+                        <span>Technology & Automation</span>
+                    </div>
+                    <div class="category-item">
+                        <div class="category-dot"></div>
+                        <span>Graphics & Shaders</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <main class="glass chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="welcome">
+                        <div class="welcome-icon">⛏️</div>
+                        <h2>Welcome to Minecraft AI</h2>
+                        <p>Your intelligent assistant for mods, servers, building tips, and everything Minecraft. Ask me anything!</p>
+                        <div class="feature-tags">
+                            <div class="feature-tag">🔍 Mod Discovery</div>
+                            <div class="feature-tag">🖥️ Server Help</div>
+                            <div class="feature-tag">🏗️ Building Tips</div>
+                            <div class="feature-tag">⚡ Performance Tweaks</div>
+                            <div class="feature-tag">💎 Expert Advice</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <form onsubmit="sendMessage(event)">
+                        <div class="chat-input-wrapper">
+                            <input 
+                                type="text" 
+                                id="userInput" 
+                                class="chat-input" 
+                                placeholder="Ask about mods, servers, building tips, or anything Minecraft..."
+                                autocomplete="off"
+                            />
+                            <button type="submit" class="send-btn" id="sendBtn">
+                                <span>Send</span>
+                                <span>🚀</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="input-footer">
+                        <div class="api-status">
+                            <div class="status-dot disconnected" id="statusDot"></div>
+                            <span id="statusText">API not configured - Using demo mode</span>
+                        </div>
+                        <span>Press Enter to send</span>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            apiEndpoint: 'YOUR_API_ENDPOINT_HERE', // Change this to your backend URL
+            useRealAPI: false // Set to true when you have API configured
+        };
+
+        // Particle System
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particles = ['⛏️', '🟩', '🟫', '💎', '⚒️', '🪓', '⭐', '✨'];
+            
+            setInterval(() => {
+                if (document.querySelectorAll('.particle').length < 20) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                    particle.style.animationDuration = (Math.random() * 15 + 20) + 's';
+                    
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => particle.remove(), 35000);
+                }
+            }, 1500);
+        }
+
+        // Chat State
+        let conversationHistory = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            document.getElementById('userInput').focus();
+            checkAPIConnection();
+        });
+
+        // Check API Connection
+        async function checkAPIConnection() {
+            if (!CONFIG.useRealAPI) {
+                updateStatus(false, 'Demo mode - Configure API for full features');
+                return;
+            }
+
+            try {
+                const response = await fetch(CONFIG.apiEndpoint + '/health');
+                if (response.ok) {
+                    updateStatus(true, 'Connected to Claude AI');
+                } else {
+                    updateStatus(false, 'API connection failed');
+                }
+            } catch (error) {
+                updateStatus(false, 'API not reachable');
+            }
+        }
+
+        function updateStatus(connected, message) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            dot.className = `status-dot ${connected ? 'connected' : 'disconnected'}`;
+            text.textContent = message;
+        }
+
+        // Message Functions
+        function addMessage(content, isUser = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Remove welcome screen if exists
+            const welcome = messagesContainer.querySelector('.welcome');
+            if (welcome) {
+                welcome.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar ${isUser ? 'user' : 'ai'}">
+                    ${isUser ? '👤' : '⛏️'}
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">${formatMessage(content)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function formatMessage(text) {
+            // Simple markdown-like formatting
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\n/g, '<br>');
+            return text;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'message ai';
+            typingDiv.innerHTML = `
+                <div class="message-avatar ai">⛏️</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        // API Communication
+        async function getAIResponse(userMessage) {
+            if (CONFIG.useRealAPI) {
+                try {
+                    const response = await fetch(CONFIG.apiEndpoint + '/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: userMessage,
+                            history: conversationHistory
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('API request failed');
+                    }
+
+                    const data = await response.json();
+                    return data.response;
+                } catch (error) {
+                    console.error('API Error:', error);
+                    return "Sorry, I'm having trouble connecting to my AI brain right now. Please check your API configuration or try again later!";
+                }
+            } else {
+                // Enhanced demo responses with download links
+                return getDemoResponse(userMessage);
+            }
+        }
+
+        function getDemoResponse(message) {
+            const lower = message.toLowerCase();
+            
+            // Building mods with download links
+            if (lower.includes('build') || lower.includes('axiom') || lower.includes('worldedit')) {
+                return `Here are the **best building mods** for Minecraft with download links:
+
+**🏗️ Axiom**
+Revolutionary building tool with instant placement and manipulation
+📥 Download: modrinth.com/mod/axiom
+✅ Versions: 1.19+, Fabric only
+⭐ Perfect for: Large-scale projects, world editing
+
+**🔧 WorldEdit**
+The classic and most powerful building tool
+📥 Download: curseforge.com/minecraft/mc-mods/worldedit
+✅ Versions: 1.7+, Forge & Fabric
+⭐ Perfect for: Command-based editing, terraforming
+
+**✨ Litematica**
+Schematic mod with holographic overlay
+📥 Download: curseforge.com/minecraft/mc-mods/litematica
+✅ Versions: 1.12+, Fabric
+⭐ Perfect for: Precise builds, recreating designs
+
+**🎨 Chisel and Bits**
+Create detailed custom blocks pixel-by-pixel
+📥 Download: curseforge.com/minecraft/mc-mods/chisels-bits
+✅ Versions: 1.10+, Forge
+⭐ Perfect for: Decorative work, detailed builds
+
+Need help installing any of these?`;
+            }
+            
+            // Performance mods with links
+            if (lower.includes('performance') || lower.includes('fps') || lower.includes('lag')) {
+                return `⚡ **Top Performance Mods** to boost your FPS:
+
+**🚀 Sodium** (Fabric)
+📥 Download: modrinth.com/mod/sodium
+• 2-3x FPS improvement
+• Replaces rendering engine
+• Must-have for Fabric
+
+**⚙️ OptiFine** (Forge)
+📥 Download: optifine.net/downloads
+• All-in-one optimization
+• Shader support included
+• HD textures & customization
+
+**🔥 Lithium** (Fabric)
+📥 Download: modrinth.com/mod/lithium
+• General game optimization
+• Works great with Sodium
+• No visual changes
+
+**💾 FerriteCore** (Both)
+📥 Download: curseforge.com/minecraft/mc-mods/ferritecore
+• Reduces RAM usage by 40%+
+• Compatible with most mods
+
+**Best Combo:**
+Fabric: Sodium + Lithium + Starlight + FerriteCore
+Forge: OptiFine + FerriteCore
+
+Installation: Place .jar files in your mods folder!`;
+            }
+            
+            // Server setup
+            if (lower.includes('server')) {
+                return `🖥️ **Complete Server Setup Guide:**
+
+**Step 1: Choose Server Type**
+• Paper (Recommended): download.papermc.io
+• Spigot: getbukkit.org/download/spigot
+• Forge: files.minecraftforge.net
+• Fabric: fabricmc.net/use/server
+
+**Step 2: System Requirements**
+• 2GB RAM minimum (5-10 players)
+• 4-8GB RAM recommended (better performance)
+• Java 17+ required
+
+**Step 3: Installation**
+1. Download server .jar file
+2. Create new folder for server
+3. Run: java -Xmx2G -Xms2G -jar server.jar nogui
+4. Edit server.properties
+5. Accept EULA in eula.txt
+
+**Step 4: Port Forwarding**
+• Forward port 25565 in router
+• Give friends your public IP
+• Or use: playit.gg (free tunnel)
+
+**Essential Plugins:**
+• EssentialsX: essentialsx.net
+• WorldEdit: enginehub.org/worldedit
+• LuckPerms: luckperms.net
+
+Want detailed help with any step?`;
+            }
+            
+            // Default response
+            return `I can help you with:
+
+🏗️ **Building Mods** - Axiom, WorldEdit, Litematica (with download links!)
+⚡ **Performance** - Sodium, OptiFine, FPS optimization
+🖥️ **Server Setup** - Complete guides with download links
+🧵 **Fabric Mods** - Modern mod recommendations
+⚒️ **Forge Mods** - Classic mods and modpacks
+💎 **Anything Minecraft** - Just ask!
+
+Try asking: "What are the best building mods?" or "How do I set up a server?"`;
+        }
+
+        // Send Message
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            const input = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, true);
+            conversationHistory.push({ role: 'user', content: message });
+            
+            // Clear input and disable
+            input.value = '';
+            sendBtn.disabled = true;
+            
+            // Show typing
+            showTypingIndicator();
+            
+            // Get AI response
+            const response = await getAIResponse(message);
+            conversationHistory.push({ role: 'assistant', content: response });
+            
+            // Remove typing and show response
+            removeTypingIndicator();
+            addMessage(response, false);
+            
+            // Re-enable input
+            sendBtn.disabled = false;
+            input.focus();
+        }
+
+        // Quick Prompt
+        function quickPrompt(text) {
+            document.getElementById('userInput').value = text;
+            document.getElementById('userInput').focus();
+        }
+
+        // Clear Chat
+        function clearChat() {
+            const messagesContainer = document.getElementById('chatMessages');
+            conversationHistory = [];
+            messagesContainer.innerHTML = `
+                <div class="welcome">
+                    <div class="welcome-icon">⛏️</div>
+                    <h2>Welcome to Minecraft AI</h2>
+                    <p>Your intelligent assistant for mods, servers, building tips, and everything Minecraft. Ask me anything!</p>
+                    <div class="feature-tags">
+                        <div class="feature-tag">🔍 Mod Discovery</div>
+                        <div class="feature-tag">🖥️ Server Help</div>
+                        <div class="feature-tag">🏗️ Building Tips</div>
+                        <div class="feature-tag">⚡ Performance Tweaks</div>
+                        <div class="feature-tag">💎 Expert Advice</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show API Info
+        function showApiInfo() {
+            addMessage(`**⚙️ API Configuration Guide:**
+
+To connect this app to real Claude AI:
+
+**1. Backend Setup Required**
+Create a Node.js server with the Anthropic SDK
+
+**2. Get Claude API Key**
+• Visit: console.anthropic.com
+• Create account & get API key
+• Free tier available!
+
+**3. Configure This App**
+In the code, set:
+• CONFIG.apiEndpoint = 'http://your-server.com'
+• CONFIG.useRealAPI = true
+
+**4. Check README.md**
+Full setup instructions included with download
+
+**Current Status:** Demo mode with enhanced responses including download links!
+
+Want me to explain the backend setup?`, false);
+        }
+    </script>
+</body>
+</html>
